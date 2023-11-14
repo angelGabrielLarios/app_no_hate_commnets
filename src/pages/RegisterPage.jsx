@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useForm } from "react-hook-form"
-import { AlertErrorForm } from "../components"
+import { AlertErrorForm, ModalError } from "../components"
 import { Link, useNavigate } from "react-router-dom"
 
 import { createUserWithEmailAndPassword } from "firebase/auth"
@@ -33,6 +33,8 @@ export const RegisterPage = () => {
         }
     })
     const [isLoading, setIsLoading] = useState(false)
+
+    const ModalErrorRef = useRef()
 
     const [errorEmailAlreadyeExists, setErrorEmailAlreadyeExists] = useState(false)
 
@@ -69,7 +71,7 @@ export const RegisterPage = () => {
 
             if (errorCode === messagesErrorFirebase.emailAlreadyInUse) {
                 setErrorEmailAlreadyeExists(`El correo electrónico que ingresó ya está en uso`);
-                document.getElementById('my_modal_3').showModal();
+                ModalErrorRef.current.showModal();
             }
 
             console.error({
@@ -200,7 +202,7 @@ export const RegisterPage = () => {
                         minLength={10}
                         maxLength={10}
                         placeholder="Telefono"
-                        className="input input-bordered input-primary block w-full placeholder:text-xs text-xs lg:text-sm lg:placeholder:text-sms"
+                        className="input input-bordered input-primary block w-full placeholder:text-xs text-xs lg:text-sm lg:placeholder:text-sm"
 
                     />
 
@@ -231,7 +233,7 @@ export const RegisterPage = () => {
                             }
                         })}
                         placeholder="Correo Electrónico"
-                        className="input input-bordered input-primary block w-full placeholder:text-xs text-xs lg:text-sm lg:placeholder:text-sms"
+                        className="input input-bordered input-primary block w-full placeholder:text-xs text-xs lg:text-sm lg:placeholder:text-sm"
                         maxLength={100}
                     />
 
@@ -264,7 +266,7 @@ export const RegisterPage = () => {
                         })}
                         placeholder="Contraseña"
                         minLength={8}
-                        className="input input-bordered input-primary block w-full placeholder:text-xs text-xs lg:text-sm lg:placeholder:text-sms"
+                        className="input input-bordered input-primary block w-full placeholder:text-xs text-xs lg:text-sm lg:placeholder:text-sm"
                         maxLength={200}
                     />
 
@@ -297,10 +299,6 @@ export const RegisterPage = () => {
                     <span className="ml-3 text-xs lg:text-sm font-medium ">Mostrar Contraseña</span>
                 </label>
 
-
-
-
-
                 <button
                     type="submit"
                     disabled={isLoading}
@@ -317,22 +315,10 @@ export const RegisterPage = () => {
                 <p className="text-center text-xs lg:text-sm">¿Ya tienes una cuenta? <Link className="text-secondary font-bold" to={`/auth/login`}>Inicia Sesión</Link></p>
             </form>
 
-            <dialog id="my_modal_3" className="modal">
-                <div className="modal-box">
-                    <form method="dialog">
-                        {/* if there is a button in form, it will close the modal */}
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                    </form>
-                    <header
-                        className="flex items-center gap-5"
-                    >
-                        <svg fill="#ff6b6b" width="30px" height="30px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" stroke="#ff6b6b"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M520.741 163.801a10.234 10.234 0 00-3.406-3.406c-4.827-2.946-11.129-1.421-14.075 3.406L80.258 856.874a10.236 10.236 0 00-1.499 5.335c0 5.655 4.585 10.24 10.24 10.24h846.004c1.882 0 3.728-.519 5.335-1.499 4.827-2.946 6.352-9.248 3.406-14.075L520.742 163.802zm43.703-26.674L987.446 830.2c17.678 28.964 8.528 66.774-20.436 84.452a61.445 61.445 0 01-32.008 8.996H88.998c-33.932 0-61.44-27.508-61.44-61.44a61.445 61.445 0 018.996-32.008l423.002-693.073c17.678-28.964 55.488-38.113 84.452-20.436a61.438 61.438 0 0120.436 20.436zM512 778.24c22.622 0 40.96-18.338 40.96-40.96s-18.338-40.96-40.96-40.96-40.96 18.338-40.96 40.96 18.338 40.96 40.96 40.96zm0-440.32c-22.622 0-40.96 18.338-40.96 40.96v225.28c0 22.622 18.338 40.96 40.96 40.96s40.96-18.338 40.96-40.96V378.88c0-22.622-18.338-40.96-40.96-40.96z"></path></g></svg>
-                        <h3 className="font-bold text-lg text-error">Error !!!</h3>
-
-                    </header>
-                    <p className="py-4 text-error">{errorEmailAlreadyeExists}</p>
-                </div>
-            </dialog>
+            <ModalError
+                ModalErrorRef={ModalErrorRef}
+                message={errorEmailAlreadyeExists}
+            />
         </main >
     )
 }

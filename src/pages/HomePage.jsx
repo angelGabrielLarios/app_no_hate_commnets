@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { auth, db, getAllPosts, getInfoUser, storage } from "../firebase"
-import { doc, setDoc } from "firebase/firestore"
+import { Timestamp, doc, setDoc } from "firebase/firestore"
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { useForm } from "react-hook-form"
 import { logout } from "../store/auth"
 import { convertDate, generateUniqueId } from "../helpers"
 import { ModalError, PostCard } from "../components"
+import { isCommentOffensive } from "../chatgpt3"
+
 
 
 export const HomePage = () => {
@@ -21,6 +23,7 @@ export const HomePage = () => {
     const { user } = useSelector(state => state.auth)
 
     const [isLoadingSendPost, setIsLoadingSendPost] = useState(false)
+
     const [isLoadingAllPosts, setisLoadingAllPosts] = useState(false)
 
     const [showToastPostCreated, setShowToastPostCreated] = useState(false)
@@ -31,7 +34,15 @@ export const HomePage = () => {
 
     const [postsFirestore, setPostsFirestore] = useState([])
 
-    const ModalErrorRef = useRef(null)
+    const ModalErrorCommentRef = useRef(null)
+
+    const ModalErrorPostRef = useRef(null)
+
+
+
+
+
+    const { message } = useSelector(state => state.modalError)
 
 
     /* const [isLoadingPostsFirestore, setIsLoadingPostsFirestore] = useState(false) */
@@ -95,6 +106,11 @@ export const HomePage = () => {
     const onSubmitAddPost = async ({ post = "" }) => {
 
         try {
+            /* if (isCommentOffensive(post)) {
+                ModalErrorPostRef.current.showModal()
+                return
+            } */
+
             setIsLoadingSendPost(true)
 
             const currentUser = await getInfoUser({ uid: user.uid })
@@ -117,7 +133,7 @@ export const HomePage = () => {
                 idPost,
                 currentUser,
                 post,
-                datePosted: new Date().toLocaleString(),
+                datePosted: Timestamp.fromDate(new Date()),
                 urlImagePost: urlImagePost,
             });
 
@@ -267,7 +283,7 @@ export const HomePage = () => {
                                             idPost={doc.idPost}
                                             urlImagePost={doc.urlImagePost}
                                             currentUser={doc.currentUser}
-                                            ModalErrorRef={ModalErrorRef}
+                                            ModalErrorRef={ModalErrorCommentRef}
                                         />
                                     )
                                 })
@@ -293,7 +309,7 @@ export const HomePage = () => {
                     >
                         <textarea
 
-                            className="textarea block w-full text-sm placeholder:text-sm placeholder:text-secondary focus:border-0"
+                            className="textarea block w-full text-sm placeholder:text-sm  focus:border-0"
                             {...register('post')}
                             placeholder={`¿Qué estas pensando ${user?.name}?`}
                         ></textarea>
@@ -382,7 +398,13 @@ export const HomePage = () => {
             }
 
             <ModalError
-                ModalErrorRef={ModalErrorRef}
+                ModalErrorRef={ModalErrorCommentRef}
+                message={message}
+            />
+
+            <ModalError
+                ModalErrorRef={ModalErrorPostRef}
+                message={`El post no se puede publicar porque se ha detectado que es inapropiado `}
             />
 
 

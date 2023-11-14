@@ -4,9 +4,11 @@ import { doc, setDoc } from 'firebase/firestore'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { db, getCommentsByIdPost, getInfoUser } from '../firebase'
-import { useSelector } from 'react-redux'
-import { containsBadWord, generateUniqueId } from '../helpers'
+import { useDispatch, useSelector } from 'react-redux'
+import { generateUniqueId } from '../helpers'
 import { PostWithCommentsCard } from './PostWithCommentsCard'
+import { isCommentOffensive } from '../chatgpt3'
+import { setMessage } from '../store/modalError/modalErrorSlice'
 
 
 export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, ModalErrorRef }) => {
@@ -16,6 +18,7 @@ export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, 
     const [isFavoritePost, setIsFavoritePost] = useState(false)
 
     const { user } = useSelector(state => state.auth)
+    const dispatch = useDispatch()
 
     const [showToastCommentCreated, setShowToastCommentCreated] = useState(false)
 
@@ -53,7 +56,9 @@ export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, 
     const onSubmitAddComment = async (data) => {
         const { comment } = data
 
-        if (containsBadWord(comment)) {
+        const calificationComment = await isCommentOffensive(comment)
+        if (calificationComment) {
+            dispatch(setMessage(`Este comentario no puede ser publicado por se ha dectado que es inapropiado`))
             ModalErrorRef.current.showModal()
             reset()
             return
