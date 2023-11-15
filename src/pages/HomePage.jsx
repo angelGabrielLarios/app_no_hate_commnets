@@ -3,13 +3,14 @@ import { Link, useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { auth, db, getAllPosts, getInfoUser, storage } from "../firebase"
 import { Timestamp, doc, setDoc } from "firebase/firestore"
-import { onAuthStateChanged, signOut } from "firebase/auth"
+import { signOut } from "firebase/auth"
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { useForm } from "react-hook-form"
 import { logout } from "../store/auth"
-import { convertDate, generateUniqueId } from "../helpers"
+import { convertDate, formatDateTimeForPost, generateUniqueId } from "../helpers"
 import { ModalError, PostCard } from "../components"
 import { isCommentOffensive } from "../chatgpt3"
+
 
 
 
@@ -77,16 +78,6 @@ export const HomePage = () => {
     }
 
     useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log(user)
-            }
-        });
-
-
-    }, [])
-
-    useEffect(() => {
 
         setisLoadingAllPosts(true)
         getAllPosts()
@@ -106,10 +97,14 @@ export const HomePage = () => {
     const onSubmitAddPost = async ({ post = "" }) => {
 
         try {
-            /* if (isCommentOffensive(post)) {
+            setIsLoadingSendPost(true)
+            const responseIsCommentOffensive = await isCommentOffensive(post)
+
+            if (responseIsCommentOffensive) {
+                setIsLoadingSendPost(false)
                 ModalErrorPostRef.current.showModal()
                 return
-            } */
+            }
 
             setIsLoadingSendPost(true)
 
@@ -275,14 +270,17 @@ export const HomePage = () => {
                             : postsFirestore.length === 0
                                 ? <p className="text-primary font-bold">No hay posts...</p>
                                 : postsFirestore.map((doc) => {
+
+                                    const { currentUser = '', datePosted = '', idPost = '', post = '', urlImagePost = '' } = doc
+
                                     return (
                                         <PostCard
-                                            key={doc.idDoc}
-                                            datePosted={doc.datePosted}
-                                            post={doc.post}
-                                            idPost={doc.idPost}
-                                            urlImagePost={doc.urlImagePost}
-                                            currentUser={doc.currentUser}
+                                            key={idPost}
+                                            datePosted={formatDateTimeForPost(datePosted.toDate())}
+                                            post={post}
+                                            idPost={idPost}
+                                            urlImagePost={urlImagePost}
+                                            currentUser={currentUser}
                                             ModalErrorRef={ModalErrorCommentRef}
                                         />
                                     )
@@ -308,7 +306,8 @@ export const HomePage = () => {
                         onSubmit={handleSubmit(onSubmitAddPost)}
                     >
                         <textarea
-
+                            minLength={1}
+                            maxLength={300}
                             className="textarea block w-full text-sm placeholder:text-sm  focus:border-0"
                             {...register('post')}
                             placeholder={`¿Qué estas pensando ${user?.name}?`}

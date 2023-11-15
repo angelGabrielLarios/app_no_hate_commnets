@@ -1,19 +1,17 @@
 import PropTypes from 'prop-types'
 
-import { doc, setDoc } from 'firebase/firestore'
+import { Timestamp, doc, setDoc } from 'firebase/firestore'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { db, getCommentsByIdPost, getInfoUser } from '../firebase'
 import { useDispatch, useSelector } from 'react-redux'
 import { generateUniqueId } from '../helpers'
 import { PostWithCommentsCard } from './PostWithCommentsCard'
-import { isCommentOffensive } from '../chatgpt3'
+import { isCommentOffensive } from '../chatgpt3/'
 import { setMessage } from '../store/modalError/modalErrorSlice'
 
 
 export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, ModalErrorRef }) => {
-
-
 
     const [isFavoritePost, setIsFavoritePost] = useState(false)
 
@@ -55,9 +53,10 @@ export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, 
 
     const onSubmitAddComment = async (data) => {
         const { comment } = data
-
+        setIsLoadingAddComment(true)
         const calificationComment = await isCommentOffensive(comment)
         if (calificationComment) {
+            setIsLoadingAddComment(false)
             dispatch(setMessage(`Este comentario no puede ser publicado por se ha dectado que es inapropiado`))
             ModalErrorRef.current.showModal()
             reset()
@@ -75,7 +74,7 @@ export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, 
                 idPost: idPost,
                 currentUser,
                 comment,
-                dateCommeted: new Date().toLocaleString(),
+                dateCommeted: Timestamp.fromDate(new Date()),
 
             })
             setShowToastCommentCreated(true)
@@ -171,7 +170,7 @@ export const PostCard = ({ idPost, post, urlImagePost, datePosted, currentUser, 
 
                         className="input input-bordered input-sm w-full block placeholder:text-xs"
                         {...register('comment')}
-                        maxLength={20}
+                        maxLength={300}
                         minLength={2}
                     />
 

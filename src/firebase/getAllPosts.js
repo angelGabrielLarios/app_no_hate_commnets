@@ -1,18 +1,25 @@
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "./firebaseConfig";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { db } from "./firebaseConfig.js";
 
 
 export const getAllPosts = async () => {
 
 
     try {
-        const querySnapshot = await getDocs(collection(db, "posts"));
+        const postsRef = collection(db, 'posts');
+        const q = query(postsRef, orderBy('datePosted', 'desc'))
+        const querySnapshot = await getDocs(q);
+
         const arrayTempPostFirestore = []
         querySnapshot.forEach((doc) => {
             arrayTempPostFirestore.push({
                 ...doc.data()
             })
         })
+
+        /* console.log(arrayTempPostFirestore)  */
+        /* console.log([...querySnapshot]) */
+        /* return querySnapshot */
 
         return arrayTempPostFirestore
     } catch (error) {
@@ -21,3 +28,4 @@ export const getAllPosts = async () => {
     }
 
 }
+

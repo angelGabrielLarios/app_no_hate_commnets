@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { formatDateTimeForPost } from '../helpers'
 
 export const PostWithCommentsCard = ({ currentUser, post, urlImagePost, isFavoritePost, setIsFavoritePost, datePosted, commentsFirestore, ModalPostCartWithCommentsRef }) => {
 
@@ -83,7 +84,7 @@ export const PostWithCommentsCard = ({ currentUser, post, urlImagePost, isFavori
 
 
                                                     <div className="">
-                                                        {`${comment?.currentUser?.name} ${comment?.currentUser?.lastName}`} <span className='text-base-content ml-2'>{comment?.dateCommeted}</span>
+                                                        {`${comment?.currentUser?.name} ${comment?.currentUser?.lastName}`} <span className='text-base-content ml-2'>{formatDateTimeForPost(comment?.dateCommeted?.toDate())}</span>
                                                     </div>
                                                 </h6>
                                                 {comment?.comment}
