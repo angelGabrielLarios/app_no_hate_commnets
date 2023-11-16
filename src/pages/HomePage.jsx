@@ -103,6 +103,7 @@ export const HomePage = () => {
             if (responseIsCommentOffensive) {
                 setIsLoadingSendPost(false)
                 ModalErrorPostRef.current.showModal()
+                reset()
                 return
             }
 

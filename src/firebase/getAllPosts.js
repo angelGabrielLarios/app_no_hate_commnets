@@ -17,10 +17,6 @@ export const getAllPosts = async () => {
             })
         })
 
-        /* console.log(arrayTempPostFirestore)  */
-        /* console.log([...querySnapshot]) */
-        /* return querySnapshot */
-
         return arrayTempPostFirestore
     } catch (error) {
         console.error(error)
