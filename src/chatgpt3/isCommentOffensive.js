@@ -8,7 +8,7 @@ export async function isCommentOffensive(comment = 'hola') {
         });
 
         const { message: { content } } = completion.choices[0]
-
+        /* comentarios */
         const response = Boolean(Number(content))
         console.log(response)
         return response
